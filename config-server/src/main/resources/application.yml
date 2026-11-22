@@ -7,7 +7,7 @@ spring:
   profiles:
     # "git"    -> reads config-repo/ from GitHub (final / grading mode)
     # "native" -> reads config-repo/ from the local disk (handy while developing)
-    active: ${CONFIG_PROFILE:native}
+    active: ${CONFIG_PROFILE:git}
   cloud:
     config:
       server:
