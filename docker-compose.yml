@@ -1,0 +1,12 @@
+# Infrastructure started with Docker.
+# The project uses in-memory data (no database, as required by the spec),
+# so only Zipkin is needed.
+#   Start : docker compose up -d
+#   Stop  : docker compose down
+services:
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: driveeasy-zipkin
+    ports:
+      - "9411:9411"
+    restart: unless-stopped

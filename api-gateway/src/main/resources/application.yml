@@ -1,0 +1,7 @@
+# Only what is needed to reach the config server.
+# Port, routes and CORS come from config-repo/api-gateway.yml
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: configserver:http://localhost:8888

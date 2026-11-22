@@ -1,0 +1,7 @@
+# Only what is needed to reach the config server.
+# Everything else comes from config-repo/client-service.yml
+spring:
+  application:
+    name: client-service
+  config:
+    import: configserver:http://localhost:8888

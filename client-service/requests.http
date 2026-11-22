@@ -1,0 +1,64 @@
+### Direct calls to client-service (port 8082)
+
+### 1. All customers
+GET http://localhost:8082/clients
+
+### 2. Search by name / CIN / email
+GET http://localhost:8082/clients?nom=ben
+###
+GET http://localhost:8082/clients?cin=0912
+
+### 3. Detail (200) / unknown (404)
+GET http://localhost:8082/clients/1
+###
+GET http://localhost:8082/clients/999
+
+### 4. Eligibility: OK (1), too young (5), expired licence (6)
+GET http://localhost:8082/clients/1/eligibilite
+###
+GET http://localhost:8082/clients/5/eligibilite
+###
+GET http://localhost:8082/clients/6/eligibilite
+
+### 5. Create (201)
+POST http://localhost:8082/clients
+Content-Type: application/json
+
+{
+  "cin": "12345678",
+  "nom": "Kharrat",
+  "prenom": "Omar",
+  "dateNaissance": "2000-05-10",
+  "email": "omar.test@mail.tn",
+  "telephone": "21612345678",
+  "adresse": "Ariana",
+  "numeroPermis": "TN-200001",
+  "dateExpirationPermis": "2030-01-01"
+}
+
+### 6. Duplicate CIN (409)
+POST http://localhost:8082/clients
+Content-Type: application/json
+
+{
+  "cin": "09123456", "nom": "X", "prenom": "Y", "dateNaissance": "1990-01-01",
+  "email": "new@mail.tn", "numeroPermis": "TN-999999", "dateExpirationPermis": "2030-01-01"
+}
+
+### 7. Invalid data (400): CIN 3 digits, bad email, birth date in the future
+POST http://localhost:8082/clients
+Content-Type: application/json
+
+{
+  "cin": "123", "nom": "X", "prenom": "Y", "dateNaissance": "2099-01-01",
+  "email": "pas-un-email", "numeroPermis": "TN-1", "dateExpirationPermis": "2030-01-01"
+}
+
+### 8. Change loyalty category
+PATCH http://localhost:8082/clients/2/categorie
+Content-Type: application/json
+
+{ "categorie": "FIDELE" }
+
+### 9. Delete (needs location-service running, else 503)
+DELETE http://localhost:8082/clients/2

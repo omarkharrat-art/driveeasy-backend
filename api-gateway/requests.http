@@ -1,0 +1,21 @@
+### Everything now goes through the gateway (port 8080) with the /api prefix
+
+### Routes loaded by the gateway
+GET http://localhost:8080/actuator/gateway/routes
+
+### vehicule-service through the gateway
+GET http://localhost:8080/api/vehicules
+
+### client-service through the gateway
+GET http://localhost:8080/api/clients/1/eligibilite
+
+### location-service through the gateway (gateway -> location -> client + vehicule : look in Zipkin!)
+GET http://localhost:8080/api/locations/1
+
+### Statistics
+GET http://localhost:8080/api/locations/statistiques
+
+### CORS preflight as the Angular app would send it -> Access-Control-Allow-Origin in the response
+OPTIONS http://localhost:8080/api/vehicules
+Origin: http://localhost:4200
+Access-Control-Request-Method: GET

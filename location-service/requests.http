@@ -1,0 +1,62 @@
+### Direct calls to location-service (port 8083). Needs vehicule-service and client-service running.
+@today = 2026-11-23
+@fin = 2026-11-27
+
+### 1. Paginated list (seed: 12 completed + 1 reserved)
+GET http://localhost:8083/locations?page=0&size=5
+
+### 2. Filters
+GET http://localhost:8083/locations?statut=TERMINEE&clientId=1
+
+### 3. Detail enriched with customer + vehicle (3 services involved)
+GET http://localhost:8083/locations/1
+
+### 4. Price simulation: client 3 (FIDELE -5%), vehicle 4 (SUV x1.3)
+POST http://localhost:8083/locations/simulation
+Content-Type: application/json
+
+{ "clientId": 3, "vehiculeId": 4, "dateDebut": "{{today}}", "dateFinPrevue": "{{fin}}" }
+
+### 5. Create a reservation (201): client 1, vehicle 1
+POST http://localhost:8083/locations
+Content-Type: application/json
+
+{ "clientId": 1, "vehiculeId": 1, "dateDebut": "{{today}}", "dateFinPrevue": "{{fin}}" }
+
+### 6. Same vehicle, same period -> 409
+POST http://localhost:8083/locations
+Content-Type: application/json
+
+{ "clientId": 2, "vehiculeId": 1, "dateDebut": "{{today}}", "dateFinPrevue": "{{fin}}" }
+
+### 7. Client too young (5) -> 400 not eligible
+POST http://localhost:8083/locations
+Content-Type: application/json
+
+{ "clientId": 5, "vehiculeId": 2, "dateDebut": "{{today}}", "dateFinPrevue": "{{fin}}" }
+
+### 8. Vehicle in MAINTENANCE (6) -> 409
+POST http://localhost:8083/locations
+Content-Type: application/json
+
+{ "clientId": 1, "vehiculeId": 6, "dateDebut": "{{today}}", "dateFinPrevue": "{{fin}}" }
+
+### 9. Departure of the new rental (id 14) -> EN_COURS, vehicle 1 becomes LOUE
+PATCH http://localhost:8083/locations/14/depart
+
+### 10. Late return (2 days after dateFinPrevue) -> penalty 2 x 1.5 x 90 = 270, client 1 becomes FIDELE
+PATCH http://localhost:8083/locations/14/retour
+Content-Type: application/json
+
+{ "kmRetour": 36000, "dateRetour": "2026-11-29" }
+
+### 11. Cancel the reservation of client 2 (id 13)
+PATCH http://localhost:8083/locations/13/annulation
+
+### 12. Statistics
+GET http://localhost:8083/locations/statistiques
+
+### 13. Check effects in the other services
+GET http://localhost:8081/vehicules/1
+###
+GET http://localhost:8082/clients/1

@@ -1,0 +1,12 @@
+server:
+  port: 8082
+
+info:
+  app:
+    name: client-service
+    description: Gestion des clients et des permis
+
+# Business properties
+driveeasy:
+  client:
+    age-minimum: 21

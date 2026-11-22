@@ -1,0 +1,15 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: service-registry
+
+eureka:
+  client:
+    # The registry is the directory itself: it must not register in itself
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    # Dev only: no self-preservation so stopped services disappear quickly
+    enable-self-preservation: false

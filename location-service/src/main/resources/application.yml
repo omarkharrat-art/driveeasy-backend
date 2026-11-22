@@ -1,0 +1,7 @@
+# Only what is needed to reach the config server.
+# Everything else (port 8083, pricing rules...) comes from config-repo/location-service.yml
+spring:
+  application:
+    name: location-service
+  config:
+    import: configserver:http://localhost:8888

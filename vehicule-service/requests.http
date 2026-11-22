@@ -1,0 +1,67 @@
+### Direct calls to vehicule-service (port 8081). Later: replace with http://localhost:8080/api
+
+### 1. List all
+GET http://localhost:8081/vehicules
+
+### 2. Filters
+GET http://localhost:8081/vehicules?carburant=DIESEL&prixMax=200
+
+### 3. Detail (200) / unknown (404)
+GET http://localhost:8081/vehicules/1
+###
+GET http://localhost:8081/vehicules/999
+
+### 4. Create (201)
+POST http://localhost:8081/vehicules
+Content-Type: application/json
+
+{
+  "immatriculation": "230 TU 1111",
+  "marque": "Kia",
+  "modele": "Picanto",
+  "annee": 2025,
+  "couleur": "Vert",
+  "carburant": "ESSENCE",
+  "boite": "MANUELLE",
+  "nbPlaces": 4,
+  "kilometrage": 1000,
+  "prixJournalier": 70,
+  "categorie": "ECONOMIQUE"
+}
+
+### 5. Duplicate immatriculation (409)
+POST http://localhost:8081/vehicules
+Content-Type: application/json
+
+{
+  "immatriculation": "123 TU 4567",
+  "marque": "Kia", "modele": "Rio", "annee": 2024,
+  "carburant": "ESSENCE", "boite": "MANUELLE", "nbPlaces": 5,
+  "kilometrage": 0, "prixJournalier": 80, "categorie": "ECONOMIQUE"
+}
+
+### 6. Invalid data (400): negative price, future year
+POST http://localhost:8081/vehicules
+Content-Type: application/json
+
+{
+  "immatriculation": "999 TU 9999",
+  "marque": "", "modele": "X", "annee": 2030,
+  "carburant": "ESSENCE", "boite": "MANUELLE", "nbPlaces": 5,
+  "kilometrage": 0, "prixJournalier": -5, "categorie": "ECONOMIQUE"
+}
+
+### 7. Change statut
+PATCH http://localhost:8081/vehicules/1/statut
+Content-Type: application/json
+
+{ "statut": "LOUE" }
+
+### 8. Delete a rented vehicle (409)
+DELETE http://localhost:8081/vehicules/1
+
+### 9. Available vehicles for a period
+GET http://localhost:8081/vehicules/disponibles?dateDebut=2026-12-01&dateFin=2026-12-05
+
+### 10. Actuator
+GET http://localhost:8081/actuator/health

@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+info:
+  app:
+    name: api-gateway
+    description: Point d'entree unique
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # ---------- Routes ----------
+          # lb://xxx = load balancing between the instances registered in Eureka
+          # StripPrefix=1 removes "/api": /api/vehicules/3 -> /vehicules/3
+          routes:
+            - id: vehicule-service
+              uri: lb://vehicule-service
+              predicates:
+                - Path=/api/vehicules/**
+              filters:
+                - StripPrefix=1
+
+            - id: client-service
+              uri: lb://client-service
+              predicates:
+                - Path=/api/clients/**
+              filters:
+                - StripPrefix=1
+
+            - id: location-service
+              uri: lb://location-service
+              predicates:
+                - Path=/api/locations/**
+              filters:
+                - StripPrefix=1
+
+          # ---------- CORS: allow the Angular frontend ----------
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "http://localhost:4200"
+                allowed-methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+                allowed-headers: "*"
+                exposed-headers: X-Request-Id, X-Response-Time, Location
+                allow-credentials: true
+                max-age: 3600
+
+# Also exposes /actuator/gateway/routes (list of routes, useful for the report)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    gateway:
+      access: unrestricted
