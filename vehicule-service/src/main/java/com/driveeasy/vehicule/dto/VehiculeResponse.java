@@ -25,13 +25,18 @@ public record VehiculeResponse(
         StatutVehicule statut,
         String imageUrl
 ) {
-    /** Converts an entity into a response DTO. */
+    /**
+     * Converts an entity into a response DTO.
+     * If an image was uploaded, imageUrl = "/vehicules/{id}/image" (relative path:
+     * the frontend prefixes it with the gateway URL http://localhost:8080/api).
+     */
     public static VehiculeResponse from(Vehicule v) {
         return new VehiculeResponse(
                 v.getId(), v.getImmatriculation(), v.getMarque(), v.getModele(),
                 v.getAnnee(), v.getCouleur(), v.getCarburant(), v.getBoite(),
                 v.getNbPlaces(), v.getKilometrage(), v.getPrixJournalier(),
                 v.getCategorie(), v.getCategorie().getCoefficient(),
-                v.getStatut(), v.getImageUrl());
+                v.getStatut(),
+                v.hasImageUploadee() ? "/vehicules/" + v.getId() + "/image" : v.getImageUrl());
     }
 }

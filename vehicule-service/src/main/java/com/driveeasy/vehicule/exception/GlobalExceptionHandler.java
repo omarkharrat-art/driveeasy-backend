@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -73,6 +75,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethod(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
         return build(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), req, null);
+    }
+
+    /** Uploaded file bigger than spring.servlet.multipart.max-file-size -> 400. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleTooBig(MaxUploadSizeExceededException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Image trop volumineuse (maximum 5 Mo)", req, null);
+    }
+
+    /** Multipart request without the "file" part -> 400. */
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingPart(MissingServletRequestPartException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Fichier manquant (champ 'file')", req, null);
     }
 
     /** Anything unexpected -> 500 (logged with the stack trace). */

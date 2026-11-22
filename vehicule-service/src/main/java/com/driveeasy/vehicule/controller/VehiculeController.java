@@ -5,11 +5,15 @@ import com.driveeasy.vehicule.dto.VehiculeRequest;
 import com.driveeasy.vehicule.dto.VehiculeResponse;
 import com.driveeasy.vehicule.model.Carburant;
 import com.driveeasy.vehicule.model.Categorie;
+import com.driveeasy.vehicule.model.Vehicule;
 import com.driveeasy.vehicule.model.StatutVehicule;
 import com.driveeasy.vehicule.service.VehiculeService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -81,5 +85,30 @@ public class VehiculeController {
     @PatchMapping("/{id}/statut")
     public VehiculeResponse changerStatut(@PathVariable Long id, @Valid @RequestBody StatutRequest request) {
         return service.changerStatut(id, request);
+    }
+
+    // ---------------- image upload ----------------
+
+    /** 200 - upload / replace the picture (multipart/form-data, field "file"), or 400 / 404 */
+    @PutMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public VehiculeResponse envoyerImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return service.enregistrerImage(id, file);
+    }
+
+    /** 200 - the picture bytes with their content type (usable directly in <img src>), or 404 */
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> image(@PathVariable Long id) {
+        Vehicule v = service.imageDe(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(v.getImageContentType()))
+                .cacheControl(CacheControl.noCache())
+                .body(v.getImageData());
+    }
+
+    /** 204 - removes the picture */
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<Void> supprimerImage(@PathVariable Long id) {
+        service.supprimerImage(id);
+        return ResponseEntity.noContent().build();
     }
 }

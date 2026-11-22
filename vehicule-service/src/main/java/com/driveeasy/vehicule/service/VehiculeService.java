@@ -9,6 +9,9 @@ import com.driveeasy.vehicule.exception.ResourceNotFoundException;
 import com.driveeasy.vehicule.model.*;
 import com.driveeasy.vehicule.repository.VehiculeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,9 +52,9 @@ public class VehiculeService {
 
     public VehiculeResponse creer(VehiculeRequest req) {
         verifierAnnee(req.annee());
-        // Rule: immatriculation is unique -> 409 (compared as stored: trimmed)
-        repository.findByImmatriculation(req.immatriculation().trim()).ifPresent(v -> {
-            throw new ConflictException("L'immatriculation " + req.immatriculation().trim() + " existe deja");
+        // Rule: immatriculation is unique -> 409
+        repository.findByImmatriculation(req.immatriculation()).ifPresent(v -> {
+            throw new ConflictException("L'immatriculation " + req.immatriculation() + " existe deja");
         });
 
         Vehicule v = new Vehicule();
@@ -64,10 +67,10 @@ public class VehiculeService {
         Vehicule v = getOrThrow(id);
         verifierAnnee(req.annee());
         // Uniqueness, ignoring the vehicle itself
-        repository.findByImmatriculation(req.immatriculation().trim())
+        repository.findByImmatriculation(req.immatriculation())
                 .filter(autre -> !autre.getId().equals(id))
                 .ifPresent(autre -> {
-                    throw new ConflictException("L'immatriculation " + req.immatriculation().trim() + " existe deja");
+                    throw new ConflictException("L'immatriculation " + req.immatriculation() + " existe deja");
                 });
 
         copier(req, v);   // statut is NOT changed here: use PATCH /statut
@@ -122,6 +125,44 @@ public class VehiculeService {
         return rechercher(null, null, StatutVehicule.DISPONIBLE, null);
     }
 
+    // ---------------- image ----------------
+
+    /** PUT /vehicules/{id}/image : stores the uploaded file in memory (replaces the previous one). */
+    public VehiculeResponse enregistrerImage(Long id, MultipartFile fichier) {
+        Vehicule v = getOrThrow(id);
+        if (fichier == null || fichier.isEmpty()) {
+            throw new BusinessException("Aucun fichier recu");
+        }
+        String type = fichier.getContentType();
+        if (type == null || !type.startsWith("image/")) {
+            throw new BusinessException("Le fichier doit etre une image (jpeg, png, webp...)");
+        }
+        try {
+            v.setImageData(fichier.getBytes());
+        } catch (IOException e) {
+            throw new BusinessException("Lecture du fichier impossible");
+        }
+        v.setImageContentType(type);
+        return VehiculeResponse.from(repository.save(v));
+    }
+
+    /** GET /vehicules/{id}/image : the uploaded image, or 404 if there is none. */
+    public Vehicule imageDe(Long id) {
+        Vehicule v = getOrThrow(id);
+        if (!v.hasImageUploadee()) {
+            throw new ResourceNotFoundException("Le vehicule " + id + " n'a pas d'image");
+        }
+        return v;
+    }
+
+    /** DELETE /vehicules/{id}/image */
+    public void supprimerImage(Long id) {
+        Vehicule v = getOrThrow(id);
+        v.setImageData(null);
+        v.setImageContentType(null);
+        repository.save(v);
+    }
+
     // ---------------- helpers ----------------
 
     private Vehicule getOrThrow(Long id) {
@@ -150,6 +191,8 @@ public class VehiculeService {
         v.setKilometrage(req.kilometrage());
         v.setPrixJournalier(req.prixJournalier());
         v.setCategorie(req.categorie());
-        v.setImageUrl(req.imageUrl());
+        // External URL only; an uploaded image is kept separately (imageData)
+        String url = req.imageUrl();
+        v.setImageUrl(url != null && url.startsWith("http") ? url : null);
     }
 }

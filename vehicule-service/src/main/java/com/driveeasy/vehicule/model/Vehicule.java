@@ -21,7 +21,9 @@ public class Vehicule {
     private BigDecimal prixJournalier;
     private Categorie categorie;
     private StatutVehicule statut;
-    private String imageUrl;
+    private String imageUrl;            // external image (optional)
+    private byte[] imageData;           // uploaded image, kept in memory (no database)
+    private String imageContentType;    // ex: image/jpeg
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -64,4 +66,12 @@ public class Vehicule {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public byte[] getImageData() { return imageData; }
+    public void setImageData(byte[] imageData) { this.imageData = imageData; }
+
+    public String getImageContentType() { return imageContentType; }
+    public void setImageContentType(String imageContentType) { this.imageContentType = imageContentType; }
+
+    public boolean hasImageUploadee() { return imageData != null && imageData.length > 0; }
 }
