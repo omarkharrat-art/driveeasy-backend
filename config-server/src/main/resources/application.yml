@@ -16,6 +16,8 @@ spring:
           search-paths: config-repo
           default-label: main
           clone-on-start: true
+          # Seconds; the 5 s default is too short for the first clone and crashes the server
+          timeout: 30
         native:
           # Path relative to the folder you start the config server from
           search-locations: ${CONFIG_NATIVE_PATH:file:../config-repo/}

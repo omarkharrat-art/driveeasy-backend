@@ -52,9 +52,9 @@ public class VehiculeService {
 
     public VehiculeResponse creer(VehiculeRequest req) {
         verifierAnnee(req.annee());
-        // Rule: immatriculation is unique -> 409
-        repository.findByImmatriculation(req.immatriculation()).ifPresent(v -> {
-            throw new ConflictException("L'immatriculation " + req.immatriculation() + " existe deja");
+        // Rule: immatriculation is unique -> 409 (compared as stored: trimmed)
+        repository.findByImmatriculation(req.immatriculation().trim()).ifPresent(v -> {
+            throw new ConflictException("L'immatriculation " + req.immatriculation().trim() + " existe deja");
         });
 
         Vehicule v = new Vehicule();
@@ -67,10 +67,10 @@ public class VehiculeService {
         Vehicule v = getOrThrow(id);
         verifierAnnee(req.annee());
         // Uniqueness, ignoring the vehicle itself
-        repository.findByImmatriculation(req.immatriculation())
+        repository.findByImmatriculation(req.immatriculation().trim())
                 .filter(autre -> !autre.getId().equals(id))
                 .ifPresent(autre -> {
-                    throw new ConflictException("L'immatriculation " + req.immatriculation() + " existe deja");
+                    throw new ConflictException("L'immatriculation " + req.immatriculation().trim() + " existe deja");
                 });
 
         copier(req, v);   // statut is NOT changed here: use PATCH /statut
